@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import f1_score
+from sklearn.metrics import f1_score, recall_score, accuracy_score, precision_score, confusion_matrix
 
 import pandas as pd
 import numpy as np
@@ -75,4 +75,52 @@ print("Model training...")
 model.fit(X_train, y_train)
 print("Model trained!")
 
+y_pred = model.predict(X_val)
 
+acc = accuracy_score(y_val, y_pred)
+prec = precision_score(y_val, y_pred, zero_division=0)
+f1 = f1_score(y_val, y_pred, zero_division=0)
+rec = recall_score(y_val, y_pred, zero_division=0)
+
+print("=== Model Evaluation ===")
+print(f"Accuracy  : {acc*100:.2f}%")
+print(f"Precision : {prec*100:.2f}%")
+print(f"Recall    : {rec*100:.2f}%")
+print(f"F1 Score  : {f1*100:.2f}%")
+
+# Confusion Matrix
+cm = confusion_matrix(y_val, y_pred)
+print("\nConfusion Matrix:")
+print(cm)
+
+#Threshold tuning
+probs = model.predict_proba(X_val)[:,1]
+
+best_t, best_f1 = 0.5, 0
+for t in np.arange(0.01, 0.99, 0.01):
+    preds = (probs >= t).astype(int)
+    f1 = f1_score(y_val, preds, zero_division=0)
+    if f1 > best_f1:
+        best_f1, best_t = f1, t
+
+print(f"Best Threshold : {best_t:.2f}")
+print(f"Best F1 Score  : {best_f1*100:.2f}%")
+
+# Test data prediction
+X_test_final = test[FEATURES].values
+test_probs = model.predict_proba(X_test_final)[:,1]
+test_preds = (test_probs >= best_t).astype(int)
+
+print("Test predictions:")
+print("Normal (0)  :", (test_preds == 0).sum())
+print("Anomaly (1) :", (test_preds == 1).sum())
+
+# Submission file
+submission = pd.DataFrame({
+    'ID'    : test['ID'].values,
+    'target': test_preds.astype(str)
+})
+
+submission.to_csv('submission_learning.csv', index=False)
+print("\nSubmission saved!")
+print(submission.head())
