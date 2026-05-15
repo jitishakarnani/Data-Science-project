@@ -80,7 +80,7 @@ anomaly-detection/
 
 ## 🚀 How to Run
 1. Clone the repository
-git clone https://github.com/yourusername/anomaly-detection
+https://github.com/jitishakarnani/Data-Science-project/tree/main
 
 2. Install dependencies
 pip install pandas numpy scikit-learn xgboost lightgbm matplotlib seaborn pyarrow jupyter
